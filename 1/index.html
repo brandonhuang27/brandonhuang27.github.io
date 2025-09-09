@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Becoming Friends with Your Camera</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            background: #fafafa;
+            color: #222;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        h2 {
+            margin-top: 2rem;
+            color: #2c3e50;
+        }
+        .section {
+            margin-bottom: 2.5rem;
+        }
+        .description {
+            margin: 0.5rem 0 1rem 0;
+        }
+        .images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .images img {
+            max-width: 300px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+    </style>
+</head>
+<body>
+    <h1>Project 1: Images of the Russian Empire</h1>
+
+    <div class="section">
+        <h2>Introduction</h2>
+        <p class="description">
+            In this project, I reconstructed colored photographs from the Prokudin-Gorskii collection. Each scene contains three separate images, which are captured through the blue, green, and red color filters. These three channel images are stacked vertically and aligned to recreate the full-color RGB image.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Approach</h2>
+        <p class="description">
+            For the exhaustive single-scale approach, I started by reading in the image and converting it to a double. The pixel values are normalized and within [0,1]. I then split the image into three equal parts, each representing one color channel (blue, green, and red). The blue channel is used as the reference channel. For each of the other two channels, I exhaustively search for the best alignment by shifting the channel within a specified range (-15 to +15 pixels in both x and y directions). In each shift, I use np.roll to translate the moving channel and evaluate alignment only over the true overlapping region so wrapped pixels don’t bias the score. For each possible shift, I calculated the image matching score between the shifted channel and the reference channel. I implemented both scoring metrics, the L2 norm/euclidean distance and the normalized cross-correlation. The L2 norm is the default metric, but for emir.tif, since it has strong brightness differences across channels, I switched to NCC and aligned on edge features instead of raw intensities. NCC is more robust in this case because edges are less affected by cross-channel brightness differences. The shift that minimizes L2/euclidean distance (or maximizes NCC) is considered the best alignment. After finding the optimal shifts for both the green and red channels, I combine them with the blue channel to create the final color image.
+        </p>
+        <p>
+            For large images (.tif files), the exhaustive approach was slow, so I implemented a coarse-to-fine pyramid search algorithm which downsamples the images by a factor of 2 until they are small enough. The images are aligned at the coarsest level and refined at progressively higher resolutions.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Results</h2>
+        <p class="description">
+            Here are the reconstructed color images and their green and red offsets for all of the example images.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/cathedral_color.jpg">
+                <figcaption>cathedral.jpg</figcaption>
+                <figcaption>Green offset: (5,2), Red offset: (12,3)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/monastery_color.jpg">
+                <figcaption>monastery.jpg</figcaption>
+                <figcaption>Green offset: (-3,2), Red offset: (3,2)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/tobolsk_color.jpg">
+                <figcaption>tobolsk.jpg</figcaption>
+                <figcaption>Green offset: (3,3), Red offset: (6,3)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/church_color.jpg">
+                <figcaption>church.tif</figcaption>
+                <figcaption>Green offset: (25,4), Red offset: (58,-4)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/emir_color.jpg">
+                <figcaption>emir.tif</figcaption>
+                <figcaption>Green offset: (49,24), Red offset: (107,40)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/harvesters_color.jpg">
+                <figcaption>harversters.tif</figcaption>
+                <figcaption>Green offset: (59,16), Red offset: (124,13)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/icon_color.jpg">
+                <figcaption>icon.tif</figcaption>
+                <figcaption>Green offset: (41,17), Red offset: (89,23)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/italil_color.jpg">
+                <figcaption>italil.tif</figcaption>
+                <figcaption>Green offset: (38,21), Red offset: (76,35)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/lastochikino_color.jpg">
+                <figcaption>lastochikino.tif</figcaption>
+                <figcaption>Green offset: (-2,-2), Red offset: (75,-8)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/lugano_color.jpg">
+                <figcaption>lugano.tif</figcaption>
+                <figcaption>Green offset: (41,-16), Red offset: (92,-29)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/melons_color.jpg">
+                <figcaption>melons.tif</figcaption>
+                <figcaption>Green offset: (81,10), Red offset: (178,13)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/self_portrait_color.jpg">
+                <figcaption>self_portrait.tif</figcaption>
+                <figcaption>Green offset: (78,29), Red offset: (176,37)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/siren_color.jpg">
+                <figcaption>siren.tif</figcaption>
+                <figcaption>Green offset: (49,-6), Red offset: (95,-25)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/three_generations_color.jpg">
+                <figcaption>three_generations.tif</figcaption>
+                <figcaption>Green offset: (53,14), Red offset: (112,11)</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Results On My Own Images</h2>
+        <p class="description">
+            Here are some more reconstructed images, for images of my choosing.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/lake_color.jpg">
+                <figcaption>Lake</figcaption>
+                <figcaption>Green offset: (35,12), Red offset: (71,14)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/house_color.jpg">
+                <figcaption>House</figcaption>
+                <figcaption>Green offset: (26,18), Red offset: (121,35)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/flowers_color.jpg">
+                <figcaption>Flowers</figcaption>
+                <figcaption>Green offset: (49,-6), Red offset: (95,-25)</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Bells & Whistles</h2>
+        <p class="description">
+            Automatic Cropping: The borders of the images were having a negative impact on the score calculation, so I cropped the images by 10% on each edge to remove the noisy borders. This resulted in better alignments.
+        </p>
+        <p>
+            Automatic Contrasting: I used percentiles to (roughly) map the darkest pixel to 0 and the brightest pixel to 1.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/emir_color_before.jpg">
+                <figcaption>emir.tif before edge cropping</figcaption>
+            </figure>
+            <figure>
+                <img src="media/emir_color.jpg">
+                <figcaption>emir.tif after edge cropping</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/cathedral_color_before.jpg">
+                <figcaption>cathedral.jpg before edge cropping</figcaption>
+            </figure>
+            <figure>
+                <img src="media/cathedral_color.jpg">
+                <figcaption>cathedral.jpg after edge cropping</figcaption>
+            </figure>
+        </div>
+    </div>
+</body>
+</html>
