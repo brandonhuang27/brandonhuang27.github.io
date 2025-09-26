@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fun with Filters and Frequencies!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            background: #fafafa;
+            color: #222;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        h2 {
+            margin-top: 2rem;
+            color: #2c3e50;
+        }
+        .section {
+            margin-bottom: 2.5rem;
+        }
+        .description {
+            margin: 0.5rem 0 1rem 0;
+        }
+        .images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .images img {
+            max-width: 300px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+    </style>
+</head>
+<body>
+    <h1>Project 2: Fun with Filters and Frequencies!</h1>
+
+    <div class="section">
+        <h2>Introduction</h2>
+        <p class="description">
+            In this project, I implemented convolutions and filtering with frequencies. This involved sharpning and blurring images, as well as creating hybrid images. Furthermore, I implemented Gaussian and Laplacian stacks, and used them to blend together images.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Part 1.1: Convolutions from Scratch!</h2>
+        <p class="description">
+            First, I created a 9x9 box filter and finite difference operators Dx and Dy. I then implemented convolutions, with four for loops and then with two for loops (with padding as well). To test my code, I took a picture of myself and convolved the picture with the box filter I created, and I did this with Dx and Dy as well.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/boxfilterandfinitedifferenceoperators.png">
+                <figcaption>Create 9x9 box filter and finite difference operators Dx and Dy</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/zeropaddingandconvolutions.png">
+                <figcaption>Implement convolutions with four for loops and two for loops, as well as zero padding</figcaption>
+            </figure>
+        </div>
+        <p>
+            Results:
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/portraitconvolved4.png">
+                <figcaption>Portrait convolved with box filter using 4 for loops</figcaption>
+            </figure>
+            <figure>
+                <img src="media/portraitconvolved2.png">
+                <figcaption>Portrait convolved with box filter using 2 for loops</figcaption>
+            </figure>
+            <figure>
+                <img src="media/portraitconvolvedsp.png">
+                <figcaption>Portrait convolved with box filter using built-in function scipy.signal.convolve2d</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/portraitconvolved4Dx.png">
+                <figcaption>Portrait convolved with box filter using</figcaption>
+                <figcaption>4 for loops and Dx</figcaption>
+            </figure>
+            <figure>
+                <img src="media/portraitconvolved4Dy.png">
+                <figcaption>Portrait convolved with box filter using</figcaption>
+                <figcaption>4 for loops and Dy</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/portraitconvolved2Dx.png">
+                <figcaption>Portrait convolved with box filter using</figcaption>
+                <figcaption>2 for loops and Dx</figcaption>
+            </figure>
+            <figure>
+                <img src="media/portraitconvolved2Dy.png">
+                <figcaption>Portrait convolved with box filter using</figcaption>
+                <figcaption>2 for loops and Dy</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/portraitconvolvedspDx.png">
+                <figcaption>Portrait convolved with box filter using</figcaption>
+                <figcaption>scipy.signal.convolve2d and Dx</figcaption>
+            </figure>
+            <figure>
+                <img src="media/portraitconvolvedspDy.png">
+                <figcaption>Portrait convolved with box filter using</figcaption>
+                <figcaption>scipy.signal.convolve2d and Dy</figcaption>
+            </figure>
+        </div>
+    </div>
+    <p>
+        My implementatations of convolutions, with both four for loops and two for loops, produced results that were nearly identical to the built-in function scipy.signal.convolve2d. The images convolved with the finite difference operators Dx and Dy successfully highlighted the vertical and horizontal edges of the image, respectively. Overall, my convolution implementations worked correctly and produced expected results.
+        To handle boundaries, I used zero padding, which involves adding a border of zeros around the original image. This approach helps to maintain the original image size after convolution and prevents boundary artifacts. By using zero padding, the convolution operation can be applied uniformly across the entire image, including the edges.
+        As for the runtime, the implementation with four for loops was significantly slower than the one with two for loops, because the two for loop approach pushes the inner computation into vectorized code, and this reduces Python overhead. The built-in function scipy.signal.convolve2d was the fastest, as it is optimized and implemented in C.
+    </p>
+
+    <div class="section">
+        <h2>Part 1.2: Finite Difference Operator</h2>
+        <p class="description">
+            For this part, I took the picture of the cameraman and convolved it with finite difference operators Dx and Dy in order to show the partial derivative in x and y. I also computed the gradient magnitude image, and then picked a threshold to produce an edge image, which was a binarized version of the gradient magnitude image.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/cameraman.png">
+                <figcaption>Cameraman</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/cameramanconvolvedDx.png">
+                <figcaption>Cameraman convolved with Dx</figcaption>
+            </figure>
+            <figure>
+                <img src="media/cameramanconvolvedDy.png">
+                <figcaption>Cameraman convolved with Dy</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/gradientmagnitudeimage.png">
+                <figcaption>Cameraman gradient magnitude image</figcaption>
+            </figure>
+            <figure>
+                <img src="media/binarizedgradientmagnitudeimage.png">
+                <figcaption>Cameraman binarized gradient magnitude image</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 1.3: Derivative of Gaussian (DoG) Filter</h2>
+        <p class="description">
+            In this part, I blurred the cameraman by convolving it with a Gaussian filter G, and then binarized the image. I then implemented another method, which involved convolving the cameraman image with the derivative of Gaussian (DoG) filters DxG and DyG, computing the gradient magnitude image, and then binarizing the image.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/1.3method1blurred.png">
+                <figcaption>Convolving with Gaussian filter</figcaption>
+            </figure>
+            <figure>
+                <img src="media/1.3method1blurredbinary.png">
+                <figcaption>Convolving with Gaussian filter, then binarizing</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/1.3method2blurred.png">
+                <figcaption>Convolving with the derivative of Gaussian</figcaption>
+                <figcaption>(DoG) filters DxG and DyG</figcaption>
+            </figure>
+            <figure>
+                <img src="media/1.3method2blurredbinary.png">
+                <figcaption>Convolving with the derivative of Gaussian</figcaption>
+                <figcaption>(DoG) filters DxG and DyG, then binarizing</figcaption>
+            </figure>
+        </div>
+        <p>
+            I compared the two methods and found that the DoG method produced a cleaner edge image with less noise.
+            After blurring the image by convolving with a Gaussian, both photos became slightly darker and there were less small details and noise. Both methods involving the Guassian filters gave essentially the same magnitude images.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Part 2.1: Image "Sharpening"</h2>
+        <p class="description">
+            In this part, I took a few sample images and created a Gaussian filter. Using this Gaussian filter, which retains only low frequencies and thus blurs the image, I sharpened the image by subtracting the blurred version (with low frequencies) to only retain the high frequencies. I also blurred the image by using the Gaussian filter to only retain the low frequencies, and then resharpened the image for comparison.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/taj.png">
+                <figcaption>Taj Mahal</figcaption>
+            </figure>
+            <figure>
+                <img src="media/taj_sharpened.png">
+                <figcaption>Taj Mahal sharpened</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/taj_blurred.png">
+                <figcaption>Taj Mahal blurred</figcaption>
+            </figure>
+            <figure>
+                <img src="media/taj_resharpened.png">
+                <figcaption>Taj Mahal resharpened</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/bridge.png">
+                <figcaption>Bridge</figcaption>
+            </figure>
+            <figure>
+                <img src="media/bridge_sharpened.png">
+                <figcaption>Bridge sharpened</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/bridge_blurred.png">
+                <figcaption>Bridge blurred</figcaption>
+            </figure>
+            <figure>
+                <img src="media/bridge_resharpened.png">
+                <figcaption>Bridge resharpened</figcaption>
+            </figure>
+        </div>
+        <p>
+            The sharpened image is definitely a lot more clear than the original image, as the edges are more crisp and there is a lot more contrast between different parts of the image, such as the windows, walls, and background in the case of the Taj Mahal.
+            In the blurred image, the higher frequencies are filtered out, so only the low frequencies are kept, which is why all the features appear less clear and there is less contrast between the different objects.
+            The resharpened image is more clear than the blurry image, but not as clear as the sharpened image.
+            This makes sense because blurring filters out high frequencies, and resharpening can sharpen what remains after blurring the image, but it can't reconstruct certain details that were already lost from blurring.
+        </p>
+    </div>
+    <div class="section">
+        <h2>Part 2.2: Hybrid Images</h2>
+        <p class="description">
+            In this part, I created hybrid images by combining the low frequencies of one image with the high frequencies of another image. I used a Gaussian filter to extract the low frequencies from the first image and subtracted the Gaussian-blurred version of the second image from the original to obtain the high frequencies. I then combined these two components to create the hybrid image, which also leads to different interpretations at different distances.
+            For the first hybrid image, I also showed other parts of the entire process, including the cutoff-frequency and the log magnitude of the Fourier transform of the two images.
+        </p>
+        <div class="images">
+            <!-- <figure>
+                <img src="media/derek.png">
+                <figcaption>derek</figcaption>
+            </figure>
+            <figure>
+                <img src="media/nutmeg.png">
+                <figcaption>nutmeg</figcaption>
+            </figure>
+            <figure>
+                <img src="media/derek_aligned.png">
+                <figcaption>derek aligned</figcaption>
+            </figure>
+            <figure>
+                <img src="media/nutmeg_aligned.png">
+                <figcaption>nutmeg aligned</figcaption>
+            </figure>
+            <figure>
+                <img src="media/derek_fourier_transform.png">
+                <figcaption>derek fourier transform</figcaption>
+            </figure>
+            <figure>
+                <img src="media/nutmeg_fourier_transform.png">
+                <figcaption>nutmeg fourier transform</figcaption>
+            </figure>
+            <figure>
+                <img src="media/derek_high_frequency.png">
+                <figcaption>derek filtered for high frequencies</figcaption>
+            </figure>
+            <figure>
+                <img src="media/nutmeg_low_frequency.png">
+                <figcaption>nutmeg filtered for low frequencies</figcaption>
+            </figure>
+            <figure>
+                <img src="media/derek_nutmeg_cutoff_frequency_choice.png">
+                <figcaption>cutoff frequency choice</figcaption>
+            </figure>
+            <figure>
+                <img src="media/derek_nutmeg_hybrid.png">
+                <figcaption>derek and nutmeg hybrid image</figcaption>
+            </figure> -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>Derek pipeline</th>
+                        <th>Nutmeg pipeline</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <figure>
+                                <img src="media/derek.png" alt="derek" width="300">
+                                <figcaption>Derek</figcaption>
+                            </figure>
+                            </td>
+                        <td>
+                            <figure>
+                                <img src="media/nutmeg.png" alt="nutmeg" width="300">
+                                <figcaption>Nutmeg</figcaption>
+                            </figure>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <figure>
+                                <img src="media/derek_aligned.png" alt="derek aligned" width="300">
+                                <figcaption>Derek aligned</figcaption>
+                            </figure>
+                        </td>
+                        <td>
+                            <figure>
+                                <img src="media/nutmeg_aligned.png" alt="nutmeg aligned" width="300">
+                                <figcaption>Nutmeg aligned</figcaption>
+                            </figure>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <figure>
+                                <img src="media/derek_fourier_transform.png" alt="derek fourier transform" width="300">
+                                <figcaption>Derek fourier transform (log|F|)</figcaption>
+                            </figure>
+                        </td>
+                        <td>
+                            <figure>
+                                <img src="media/nutmeg_fourier_transform.png" alt="nutmeg fourier transform" width="300">
+                                <figcaption>Nutmeg fourier transform (log|F|)</figcaption>
+                            </figure>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <figure>
+                                <img src="media/derek_high_frequency.png" alt="derek high frequency" width="300">
+                                <figcaption>Derek filtered for high frequencies</figcaption>
+                            </figure>
+                        </td>
+                        <td>
+                            <figure>
+                                <img src="media/nutmeg_low_frequency.png" alt="nutmeg low frequency" width="300">
+                                <figcaption>Nutmeg filtered for low frequencies</figcaption>
+                            </figure>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2">
+                            <figure>
+                                <img src="media/derek_nutmeg_cutoff_frequency_choice.png" alt="cutoff frequency choice" width="620">
+                                <figcaption>Cutoff frequency choice (kernel size = 25, sigma = 5)</figcaption>
+                            </figure>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2">
+                            <figure>
+                                <img src="media/derek_nutmeg_hybrid.png" alt="derek and nutmeg hybrid" width="620">
+                                <figcaption>Derek + nutmeg hybrid image</figcaption>
+                            </figure>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="description">
+            Emir + Khan (kernel size = 11, sigma = 3)
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/emir.png">
+                <figcaption>Emir (high frequencies)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/khan.png">
+                <figcaption>Khan (low frequencies)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/emir_khan_hybrid_image.png">
+                <figcaption>Emir + khan hybrid image</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            Church + Flower (kernel size = 31, sigma = 6)
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/church.png">
+                <figcaption>Church (high frequencies)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/flower.png">
+                <figcaption>Flower (low frequencies)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/church_flower_hybrid_image.png">
+                <figcaption>Church + flower hybrid image</figcaption>
+            </figure>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Part 2.3: Gaussian and Laplacian Stacks</h2>
+        <p class="description">
+            In this part, I constructed Gaussian and Laplacian stacks, which are similar to pyramids, but the difference is that in a stack the images are never downsampled. I then applied the Gaussian filter at each level to create each level of the Gaussian stack. I then applied my Gaussian and Laplacian stacks to the Oraple (orange + apple) and showed the results below.
+            For the oraple's Gaussian filter, I used a kernel size of 31 and a sigma of 6. I also used a depth of 7, and I showed the results at each level.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/oraple_depth0.png">
+                <figcaption>Oraple at depth 0</figcaption>
+            </figure>
+            <figure>
+                <img src="media/oraple_depth1.png">
+                <figcaption>Oraple at depth 1</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/oraple_depth2.png">
+                <figcaption>Oraple at depth 2</figcaption>
+            </figure>
+            <figure>
+                <img src="media/oraple_depth3.png">
+                <figcaption>Oraple at depth 3</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/oraple_depth4.png">
+                <figcaption>Oraple at depth 4</figcaption>
+            </figure>
+            <figure>
+                <img src="media/oraple_depth5.png">
+                <figcaption>Oraple at depth 5</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/oraple_depth6.png">
+                <figcaption>Oraple at depth 6</figcaption>
+            </figure>
+            <figure>
+                <img src="media/oraple_depth7.png">
+                <figcaption>Oraple at depth 7</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/oraple_final.png">
+                <figcaption>Oraple final</figcaption>
+            </figure>
+        </div>
+        <p>
+            The blended image successfully combined features from both the apple and orange images, with a smooth transition between them. The left side of the blended image prominently features the apple, while the right side showcases the orange, demonstrating effective use of Laplacian stacks and masking for image blending.
+        </p>
+    </div>
+    <div class="section">
+        <h2>Part 2.4: Multiresolution Blending</h2>
+        <p class="description">
+            Aside from the oraple, I also blended together two other pairs of images.
+        </p>
+        <p class ="description">
+            First, I blended together a church and a flower. I initialized the mask as an ellipse, keeping the church where the mask is 1 (inside the ellipse) and keeping the flower where the mask is 0 (outside the ellipse).
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/church_flower_depth0.png">
+                <figcaption>Church + flower at depth 0</figcaption>
+            </figure>
+            <figure>
+                <img src="media/church_flower_depth1.png">
+                <figcaption>Church + flower at depth 1</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/church_flower_depth2.png">
+                <figcaption>Church + flower at depth 2</figcaption>
+            </figure>
+            <figure>
+                <img src="media/church_flower_depth3.png">
+                <figcaption>Church + flower at depth 3</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/church_flower_depth4.png">
+                <figcaption>Church + flower at depth 4</figcaption>
+            </figure>
+            <figure>
+                <img src="media/church_flower_depth5.png">
+                <figcaption>Church + flower at depth 5</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/church_flower_depth6.png">
+                <figcaption>Church + flower at depth 6</figcaption>
+            </figure>
+            <figure>
+                <img src="media/church_flower_depth7.png">
+                <figcaption>Church + flower at depth 7</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/church_flower_final.png">
+                <figcaption>Church + flower final</figcaption>
+            </figure>
+        </div>
+        <p class ="description">
+            Additionally, I blended together a bridge and the taj mahal. I initialized the mask as an circle, keeping the bridge where the mask is 1 (inside the circle) and keeping the taj where the mask is 0 (outside the circle).
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/bridge_taj_depth0.png">
+                <figcaption>Bridge + taj at depth 0</figcaption>
+            </figure>
+            <figure>
+                <img src="media/bridge_taj_depth1.png">
+                <figcaption>Bridge + taj at depth 1</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/bridge_taj_depth2.png">
+                <figcaption>Bridge + taj at depth 2</figcaption>
+            </figure>
+            <figure>
+                <img src="media/bridge_taj_depth3.png">
+                <figcaption>Bridge + taj at depth 3</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/bridge_taj_depth4.png">
+                <figcaption>Bridge + taj at depth 4</figcaption>
+            </figure>
+            <figure>
+                <img src="media/bridge_taj_depth5.png">
+                <figcaption>Bridge + taj at depth 5</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/bridge_taj_depth6.png">
+                <figcaption>Bridge + taj at depth 6</figcaption>
+            </figure>
+            <figure>
+                <img src="media/bridge_taj_depth7.png">
+                <figcaption>Bridge + taj at depth 7</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/bridge_taj_final.png">
+                <figcaption>Bridge + taj final</figcaption>
+            </figure>
+        </div>
+    </div>
+</body>
+</html>
