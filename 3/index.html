@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <title>[Auto]Stitching Photo Mosaics</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            background: #fafafa;
+            color: #222;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        h2 {
+            margin-top: 2rem;
+            color: #2c3e50;
+        }
+        .section {
+            margin-bottom: 2.5rem;
+        }
+        .description {
+            margin: 0.5rem 0 1rem 0;
+        }
+        .images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .images img {
+            max-width: 300px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+    </style>
+</head>
+<body>
+    <h1>Project 3: [Auto]Stitching Photo Mosaics</h1>
+
+    <div class="section">
+        <h2>Introduction</h2>
+        <p class="description">
+            In this project, I captured source photographs, identified key correspondencies between them, and implemented warping and composited them.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Part A: Image Warping and Mosaicing</h2>
+        <p class="description">
+            In this part, I implemented image mosaicing by warping the images, applying resampling, and compositing them.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Part A.1: Shoot the Pictures</h2>
+        <p class="description">
+            Here, I have two pairs of photographs with projective transformations between them. Each set of photographs contains a center, left, and right image, from rotating the camera.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/room_left.jpg">
+                <figcaption>Room Left</figcaption>
+            </figure>
+            <figure>
+                <img src="media/room_center.jpg">
+                <figcaption>Room Center</figcaption>
+            </figure>
+            <figure>
+                <img src="media/room_right.jpg">
+                <figcaption>Room Right</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/balconyview_left.jpg">
+                <figcaption>Balcony View Left</figcaption>
+            </figure>
+            <figure>
+                <img src="media/balconyview_center.jpg">
+                <figcaption>Balcony View Center</figcaption>
+            </figure>
+            <figure>
+                <img src="media/balconyview_right.jpg">
+                <figcaption>Balcony View Right</figcaption>
+            </figure>
+        </div>
+
+    <div class="section">
+        <h2>Part A.2: Recover Homographies</h2>
+        <p class="description">
+            In this part, I implemented the computeH function to compute the homography matrix H from point correspondencies between two images. H is used to project or transform an image onto another image's coordinate system. I then used this function to compute the homographies between the center and left images, as well as between the center and right images, for both sets of photographs.
+            Below, I have displayed the point correspondencies with each pair of images placed side by side. I also included the computed homography matrices for each pair of images as well as the system of equations used to derive the homography matrix.
+            For the system of equations, as shown below, I set up a system of linear equations Ah = 0, where A is a matrix constructed from the point correspondencies, h is the vectorized form of the homography matrix H, and 0 is the zero vector. I then solved for h using Singular Value Decomposition (SVD) to find the null space of A, which gives me the homography matrix H.
+            (x, y) is a point on the original image, and (u, v) is the corresponding point on the transformed image.
+            h is the vectorized form of the homography matrix H.
+        </p>
+        <p class="description">
+            For each pair of coordinates (x, y) and (u, v), I set up the following two equations:
+        </p>
+        <p class="description">
+        \[
+        \begin{bmatrix}
+          x & y & 1 & 0 & 0 & 0 & -ux & -uy & -u \\
+           0 &  0 &  0 & x & y & 1 & -vx & -vy & -v
+        \end{bmatrix}
+        \begin{bmatrix}
+          h_{11}\\ h_{12}\\ h_{13}\\ h_{21}\\ h_{22}\\ h_{23}\\ h_{31}\\ h_{32}\\ h_{33}
+        \end{bmatrix}
+        = \mathbf{0}
+        \]
+        With all of the correspondencies put together, this produced the the system of equations Ah = 0.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/room_center_to_left.png">
+                <figcaption>Room (center and left)</figcaption>
+                <br><br>
+                <figcaption>
+                    H = \(\begin{bmatrix}
+                    7.40230466e-01 & -2.31591343e-02 & 9.74813834e+02 \\
+                    -9.63320232e-02 & 8.73164191e-01 & 1.79437967e+02 \\
+                    -6.31142054e-05 & -7.47518720e-06 & 1.00000000e+00
+                    \end{bmatrix}\)
+                </figcaption>
+            </figure>
+            <figure>
+                <img src="media/room_center_to_right.png">
+                <figcaption>Room (center and right)</figcaption>
+                <br><br>
+                <figcaption>
+                    H = \(\begin{bmatrix}
+                    1.31165135e+00 & 3.81908066e-02 & -9.29567499e+02 \\
+                    1.02172905e-01 & 1.20130525e+00 & -3.50479804e+02 \\
+                    7.96861619e-05 & 1.02948364e-05 & 1.00000000e+00
+                    \end{bmatrix}\)
+                </figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/balconyview_center_to_left.png">
+                <figcaption>Balcony view (center and left)</figcaption>
+                <br><br>
+                <figcaption>
+                    H = \(\begin{bmatrix}
+                    9.95013440e-01 & 1.23355449e-01 & 5.55758106e+02 \\
+                    -7.31238097e-03 & 1.14089198e+00 & -5.70143709e+01 \\
+                    -2.78791522e-05 & 5.86498133e-05 & 1.00000000e+00
+                    \end{bmatrix}\)
+                </figcaption>
+            </figure>
+            <figure>
+                <img src="media/balconyview_center_to_right.png">
+                <figcaption>Balcony view (center and right)</figcaption>
+                <br><br>
+                <figcaption>
+                    H = \(\begin{bmatrix}
+                    1.39288236e+00 & 6.69418891e-02 & -9.55981993e+02 \\
+                    1.36716845e-01 & 1.31814604e+00 & -5.61159692e+02 \\
+                    7.99104016e-05 & 4.81454907e-05 & 1.00000000e+00
+                    \end{bmatrix}\)
+                </figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part A.3: Warp the Images</h2>
+        <p class="description">
+            In this part, I implemented the warpImageNearestNeighbor(im, H) and warpImageBilinear(im, H) functions using inverse warping to warp an image im using the homography matrix H. For each coordinate (u,v) in the target coordinate system, I calculated (x,y) = H_inv*(u,v,1) to sample the source image.
+            The warpImageNearestNeighbor function uses nearest neighbor interpolation, while the warpImageBilinear function uses bilinear interpolation for resampling the pixel values.
+            I then used these functions to warp the center image onto the left image's coordinate system, for both sets of photographs.
+            Here are my rectification results:
+        </p>
+        <p class="description">
+            For nearest neighbor interpolation, I simply rounded the (x,y) coordinates to the nearest integer values and used those to index into the source image to get the pixel value.
+            This method is fast and produces crisp edges, but creates a blocky/jagged appearance.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/room_center.jpg">
+                <figcaption>Room original</figcaption>
+            </figure>
+            <figure>
+                <img src="media/room_warped_nn.png">
+                <figcaption>Room warped with nearest neighbor interpolation</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/balconyview_center.jpg">
+                <figcaption>Balcony view original</figcaption>
+            </figure>
+            <figure>
+                <img src="media/balconyview_warped_nn.png">
+                <figcaption>Balcony view warped with nearest neighbor interpolation</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            For bilinear interpolation, I calculated the weighted average of the four nearest pixel values surrounding the (x,y) coordinates, based on their distances to (x,y).
+            This method produces smoother results and reduces blockiness, but is slightly more computationally expensive.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/room_center.jpg">
+                <figcaption>Room original</figcaption>
+            </figure>
+            <figure>
+                <img src="media/room_warped_bilinear.png">
+                <figcaption>Room warped with bilinear interpolation</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/balconyview_center.jpg">
+                <figcaption>Balcony view original</figcaption>
+            </figure>
+            <figure>
+                <img src="media/balconyview_warped_bilinear.png">
+                <figcaption>Balcony view warped with bilinear interpolation</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part A.4: Blend the Images into a Mosaic</h2>
+        <p class="description">
+            In this part, I warped the images and blended them to create an image mosaic. I implemented the mosaic_pair function to blend the overlapping regions of two images together using the homography matrix H and to warp one image onto the other's coordinate system. I used inverse warping with bilinear interpolation for resampling the pixel values during warping.
+        </p>
+        <p class="description">
+            To make sure that nothing got cropped, I first computed the four corners of the warped image and adjusted the output canvas size accordingly to fit both images.
+            I then copied the reference/unwarped image onto the canvas, and the other image was warped with H into the reference frame and blended into the canvas.
+            For blending, I computed alpha masks for both images, where the alpha value is 1 in the center of the image and gradually decreases to 0 towards the edges. I then used these alpha masks to compute a weighted average of the pixel values from both images in the overlapping region, resulting in a smooth transition between the two images.
+            To apply this, I mulitiplied the pixel values of each image by their respective alpha masks, making sure to zero the alpha values in the empty, black regions produced from warping.
+            Finally, I took the weighted average of the two images using their alpha masks to get the final blended mosaic. For overlapping regions, I blended by the relative interior distance, so w2 = d2 / (d1 + d2) and w1 = 1 - w2. For non-overlapping regions, I simply used the pixel values from the image that is present.
+        </p>
+        <p class="description">
+            More sophisticated blending techniques, such as a Laplacian pyramid, can be used to reduce ghosting for high-frequency details, further improve the blending quality, and reduce visible seams.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/room_center.jpg">
+                <figcaption>Room 1</figcaption>
+            </figure>
+            <figure>
+                <img src="media/room_left.jpg">
+                <figcaption>Room 2</figcaption>
+            </figure>
+            <figure>
+                <img src="media/room_mosaic.png">
+                <figcaption>Room mosaic</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/balconyview_center.jpg">
+                <figcaption>Balcony view 1</figcaption>
+            </figure>
+            <figure>
+                <img src="media/balconyview_right.jpg">
+                <figcaption>Balcony view 2</figcaption>
+            </figure>
+            <figure>
+                <img src="media/balconyview_mosaic.png">
+                <figcaption>Balcony view mosaic</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/campus_center.jpg">
+                <figcaption>Campus 1</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campus_right.jpg">
+                <figcaption>Campus 2</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campus_mosaic.png">
+                <figcaption>Campus mosaic</figcaption>
+            </figure>
+        </div>
+    </div>
+</body>
+</html>
