@@ -176,7 +176,7 @@
             In this part, I implemented the warpImageNearestNeighbor(im, H) and warpImageBilinear(im, H) functions using inverse warping to warp an image im using the homography matrix H. For each coordinate (u,v) in the target coordinate system, I calculated (x,y) = H_inv*(u,v,1) to sample the source image.
             The warpImageNearestNeighbor function uses nearest neighbor interpolation, while the warpImageBilinear function uses bilinear interpolation for resampling the pixel values.
             I then used these functions to warp the center image onto the left image's coordinate system, for both sets of photographs.
-            Here are my rectification results (for the room picture, I used the monitor on my desk as the rectangle, and for the campus picture, I used the rectangle on the right side of the building):
+            Below are my rectification results. Note that for the room picture, I used the monitor on my desk as the rectangle, and since the bottom right corner was slightly out of frame, I just picked the best possible point that was in the frame. For the campus picture, I used the rectangle on the right side of the building which looks like it contains three rectangles side by side.
         </p>
         <p class="description">
             For nearest neighbor interpolation, I simply rounded the (x,y) coordinates to the nearest integer values and used those to index into the source image to get the pixel value.
