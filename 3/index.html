@@ -38,6 +38,25 @@
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
+        img[src$="descriptors_balconyview_center.png"],
+        img[src$="descriptors_balconyview_left.png"] {
+            max-width: 800px; /* adjust as needed */
+            width: 100%;
+            height: auto;
+        }
+        img[src$="feature_matching_balconyview_center.png"],
+        img[src$="feature_matching_balconyview_left.png"] {
+            max-width: 600px; /* adjust as needed */
+            width: 100%;
+            height: auto;
+        }
+        img[src$="balconyview_mosaic_auto.png"],
+        img[src$="room_mosaic_auto.png"],
+        img[src$="campus_mosaic_auto.png"] {
+            max-width: 1000px; /* adjust as needed */
+            width: 100%;
+            height: auto;
+        }
     </style>
 </head>
 <body>
@@ -306,5 +325,96 @@
             </figure>
         </div>
     </div>
+
+    <div class ="section">
+        <h2>B.1: Harris Corner Detection</h2>
+        <p class="description">
+            Harris Interest Point Detector: I implemented the Harris corner detection algorithm to identify interest points in an image. The algorithm computes the gradient of the image, constructs the structure tensor, and calculates the Harris response for each pixel. I applied non-maximum suppression to extract distinct corner points from the response map.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/harris_balconyview_center.png">
+                <figcaption>Balcony view center</figcaption>
+            </figure>
+            <figure>
+                <img src="media/harris_balconyview_left.png">
+                <figcaption>Balcony view left</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            Adaptive Non-Maximal Suppression: To ensure a uniform distribution of interest points across the image, I implemented adaptive non-maximal suppression (ANMS). This technique selects the top 500 corners based on their strength and spatial distribution, allowing for a more balanced set of keypoints for further processing.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/anms_balconyview_center.png">
+                <figcaption>Balcony view center</figcaption>
+            </figure>
+            <figure>
+                <img src="media/anms_balconyview_left.png">
+                <figcaption>Balcony view left</figcaption>
+            </figure>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>B.2: Feature Descriptor Extraction</h2>
+        <p class="description">
+            In this part, I implemented a feature descriptor to represent the local image structure around each interest point. The descriptor takes in a 40x40 window centered at each keypoint, which is blurred with a Gaussian filter, then downsampled to an 8x8 grid and normalized to create a robust feature vector for matching. I did this for both the balcony view center and left images.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/descriptors_balconyview_center.png">
+                <figcaption>Feature descriptors for balcony view center</figcaption>
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <img src="media/descriptors_balconyview_left.png">
+                <figcaption>Feature descriptors for balcony view left</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>B.3: Feature Matching</h2>
+        <p class="description">
+            In this part, I implemented feature matching between two images using the extracted feature descriptors. I computed the Euclidean distance between each pair of descriptors from the two images and applied Lowe's ratio test to identify reliable matches. This method helps to filter out ambiguous matches and retain only the most distinctive correspondences.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/feature_matching_balconyview_center.png">
+                <figcaption>Feature matches on balcony view center</figcaption>
+            </figure>
+            <figure>
+                <img src="media/feature_matching_balconyview_left.png">
+                <figcaption>Feature matches on balcony view left</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>B.4: RANSAC for Robust Homography</h2>
+        <p class="description">
+            In this part, I implemented the RANSAC algorithm to robustly estimate the homography matrix between two images using the matched feature points. RANSAC iteratively selects random subsets of correspondences to compute candidate homographies and evaluates them based on the number of inliers that fit the model within a specified threshold. The homography with the highest number of inliers is selected as the final estimate, providing resilience against outliers in the feature matches.
+            For manual stitching, I used the mosaics I generated in part A of this project, and I compared this to the automatic stitching using RANSAC.
+        </p>
+        <div class="images">
+            <figure>
+                <figcaption>Balcony view manual vs automatic stitching</figcaption>
+                <img src="media/balconyview_mosaic_auto.png">
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <figcaption>Room manual vs automatic stitching</figcaption>
+                <img src="media/room_mosaic_auto.png">
+            </figure>
+        </div>
+        <div class="images">
+            <figure>
+                <figcaption>Campus manual vs automatic stitching</figcaption>
+                <img src="media/campus_mosaic_auto.png">
+            </figure>
+        </div>
 </body>
 </html>
