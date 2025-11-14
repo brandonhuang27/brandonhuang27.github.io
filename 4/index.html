@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <title>Neural Radiance Field!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            background: #fafafa;
+            color: #222;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        h2 {
+            margin-top: 2rem;
+            color: #2c3e50;
+        }
+        .section {
+            margin-bottom: 2.5rem;
+        }
+        .description {
+            margin: 0.5rem 0 1rem 0;
+        }
+        .images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .images figure {
+            flex: 1;              /* let each figure take up more space */
+        }
+        .images img {
+            max-width: 300px;
+            /* width: 70%; */
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+    </style>
+</head>
+<body>
+    <h1>Project 4: Neural Radiance Field!</h1>
+
+    <div class="section">
+        <h2>Introduction</h2>
+        <p class="description">
+            In this project, I fit a neural field to a 2D image, fit a neural radiance field from multi-view images, and then trained it with my own data.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Part 0: Camera Calibration and 3D Scanning</h2>
+        <p class="description">
+            In this part, I took a 3D scan of an object and captured multiple images of it from different angles. I then calibrated the camera using a checkerboard pattern to obtain the intrinsic and extrinsic parameters, and I used these parameters to estimate the camera poses for each image. Finally, I undistorted the images and packaged the data for training the neural radiance field.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/viser1.jpg">
+                <figcaption>Visualization of Camera Frustums (Angle 1)</figcaption>
+            </figure>
+            <figure>
+                <img src="media/viser2.jpg">
+                <figcaption>Visualization of Camera Frustums (Angle 2)</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 1: Fit a Neural Field to a 2D Image</h2>
+        <p class="description">
+            In this part, I implemented a multilayer perceptron (MLP) to fit a neural field to a single 2D image. The MLP takes in 2D coordinates (x, y) and outputs the corresponding RGB color values. I used positional encoding to enhance the model's ability to capture high-frequency details in the image. The network was trained using mean squared error loss between the predicted and actual pixel colors. I also did hyperparameter tuning by varying the hidden layer size, learning rate, and positional encoding frequencies to achieve the best reconstruction quality.
+        </p>
+        <p class="description">
+            Model Architecture: number of layers = 4, hidden units per layer = 256, positional encoding frequencies = 10, learning rate = 0.01, number of training iterations = 2000.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/modelarchitecture.jpg">
+            </figure>
+        </div>
+        <p class="description">
+            Training Progression:
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/training_progression_animal.jpg">
+                <figcaption>Training Progression on the Provided Test Image of the Animal</figcaption>
+            </figure>
+            <figure>
+                <img src="media/training_progression_orange.jpg">
+                <figcaption>Training Progression on an Image of An Orange</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            Final Results for Two Choices of Max Positional Encoding Frequency and 2 Choices of Width:
+        </p>
+        <p class="description">
+            1. Max Frequency = 10, Width = 256: PSNR = 37.38<br>
+            2. Max Frequency = 10, Width = 64: PSNR = 34.14<br>
+            3. Max Frequency = 5, Width = 256: PSNR = 35.83<br>
+            4. Max Frequency = 5, Width = 64: PSNR = 33.88
+        </p>
+        <p class="description">
+            PSNR Curve for Training on the Provided Test Image of the Animal:
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/psnr_curve_animal.png">
+                <figcaption>PSNR Curve for Animal Image</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 2: Fit a Neural Radiance Field from Multi-view Images</h2>
+        <p class="description">
+            In this part, I used a neural radiance field to represent a 3D image, using inverse rendering from multi-view calibrated images. I tested this using the Lego scene from the original NeRF paper.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Part 2.1: Create Rays from Cameras</h2>
+        <p class="description">
+            In this part, I first implemented camera to world coordinate conversion to transform camera coordinates to world coordinates using the world-to-camera (w2c) transformation matrix, or extrinsic matrix.<br>
+            Next, I implemented pixel to camera coordinate conversion, which converts pixel coordinates to camera coordinates using the intrinsic matrix K.<br>
+            Then, I implemented pixel to ray, which generates rays originating from the camera center and passing through each pixel in the image. 
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Part 2.2: Sampling</h2>
+        <p class="description">
+            First, I implemented sampling rays from images, which randomly selects a subset of pixels from the images, turns them into rays, and uses these rays to train the neural radiance field. Since the pixels are measured at their corners, I added 0.5 to the UV pixel grid to get to the pixel centers. The two options I implemented were to either sample some images and then sample rays from each image, or to mix all the pixels together and sample rays from all images.<br>
+            Next, I implemented sampling points along rays, which samples 3D points along each ray at regular intervals between a near (2.0) and far (6.0) plane. These sampled points add small perturbations to their positions to improve the model's ability to capture fine details (n_samples = 32 or 64 points per ray).
+        </p>
+    </div>
+
+    <div class ="section">
+        <h2>Part 2.3: Putting the Dataloading All Together</h2>
+        <p class="description">
+            In this part, I wrote a dataloader that randomly samples pixels from nultiview images. For each sampled pixel, the dataloader generates a ray and samples points along that ray. The dataloader returns the sampled points, their corresponding ray directions, and the ground truth RGB colors for training the neural radiance field.
+        </p>
+    </div>
+    
+    <div class="section">
+        <h2>Part 2.4: Neural Radiance Field</h2>
+        <p class="description">
+            In this part, I implemented an MLP to represent the neural radiance field. The MLP takes in 3D coordinates and view directions as input and outputs the corresponding RGB color and volume density. I used positional encoding to encode the ray direction and 3D coordinates to enhance the model's ability to capture high-frequency details in the 3D scene.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/nerf_model_architecture.jpg">
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 2.5: Volume Rendering</h2>
+        <p class="description">
+            In this part, I implemented volume rendering, which integrates the colors and densities along each ray to produce the final pixel color. I computed the accumulated transmittance and weights for each sampled point along the ray, and used these to calculate the final RGB color for each pixel.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Visualization of Rays and Samples</h2>
+        <p class="description">
+            Here are some visualizations of the rays and sampled points in Viser.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/2.3viser1.jpg">
+                <figcaption>Sample one random ray from each camera with sampled points</figcaption>
+            </figure>
+            <figure>
+                <img src="media/2.3viser2.jpg">
+                <figcaption>Sample 100 random rays from one camera with sampled points</figcaption>
+            </figure>
+        </div>
+        <h2>Training Process</h2>
+        <p class="description">
+            Here is a visualization of the training process across iterations.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/novel_view_iter_0001.png">
+                <figcaption>Iteration: 1</figcaption>
+                <figcaption>PSNR: 11.77 dB</figcaption>
+            </figure>
+            <figure>
+                <img src="media/novel_view_iter_0200.png">
+                <figcaption>Iteration: 200</figcaption>
+                <figcaption>PSNR: 17.19 dB</figcaption>
+            </figure>
+            <figure>
+                <img src="media/novel_view_iter_0400.png">
+                <figcaption>Iteration: 400</figcaption>
+                <figcaption>PSNR: 20.13 dB</figcaption>
+            </figure>
+            <figure>
+                <img src="media/novel_view_iter_0600.png">
+                <figcaption>Iteration: 600</figcaption>
+                <figcaption>PSNR: 21.73 dB</figcaption>
+            </figure>
+            <figure>
+                <img src="media/novel_view_iter_0800.png">
+                <figcaption>Iteration: 800</figcaption>
+                <figcaption>PSNR: 22.62 dB</figcaption>
+            </figure>
+            <figure>
+                <img src="media/novel_view_iter_1000.png">
+                <figcaption>Iteration: 1000</figcaption>
+                <figcaption>PSNR: 23.08 dB</figcaption>
+            </figure>
+            <figure>
+                <img src="media/novel_view_iter_1200.png">
+                <figcaption>Iteration: 1200</figcaption>
+                <figcaption>PSNR: 23.22 dB</figcaption>
+            </figure>
+            <figure>
+                <img src="media/novel_view_iter_1400.png">
+                <figcaption>Iteration: 1400</figcaption>
+                <figcaption>PSNR: 24.11 dB</figcaption>
+            </figure>
+        </div>
+        <h2>PSNR Curve on the Validation Set</h2>
+        <p class="description">
+            The PSNR (Peak Signal-to-Noise Ratio) curve measures the performance of the validation set during training.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/psnr_nerf.png">
+                <figcaption>PSNR Curve on the Validation Set</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Novel View Gif</h2>
+        <p class="description">
+            Here is a gif showing novel views rendered from the trained neural radiance field of the lego scene.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/lego_nerf.gif">
+                <figcaption>Novel View Gif on Lego Scene</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 2.6: Training with your own data</h2>
+        <p class="description">
+            In this part, I trained the neural radiance field using my own captured data from Part 0. I used the calibrated camera parameters and undistorted images to train the model, following the same procedure as with the Lego scene.
+            I kept the hyperparmeters mostly the same, using an Adam optimizer with learning rate 5e-4, 10000 rays per iteration, and 1500 iterations.
+            However, the dimensions of my phone's images were 4032x3024, which was causing memory issues, so I rescaled the images to have dimensions of 640x480.
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/nerf_mydata.gif">
+                <figcaption>Novel View Gif on My Data</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            Training Loss and PSNR Curve on My Data:
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/loss_mydata.png">
+                <figcaption>Training Loss</figcaption>
+            </figure>
+            <figure>
+                <img src="media/psnr_mydata.png">
+                <figcaption>PSNR Curve</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            Intermediate Renders of My Data During Training:
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/snorlax_novel_view_iter_0001.png">
+                <figcaption>Iteration: 1</figcaption>
+            </figure>
+            <figure>
+                <img src="media/snorlax_novel_view_iter_0200.png">
+                <figcaption>Iteration: 200</figcaption>
+            </figure>
+            <figure>
+                <img src="media/snorlax_novel_view_iter_0400.png">
+                <figcaption>Iteration: 400</figcaption>
+            </figure>
+            <figure>
+                <img src="media/snorlax_novel_view_iter_0600.png">
+                <figcaption>Iteration: 600</figcaption>
+            </figure>
+            <figure>
+                <img src="media/snorlax_novel_view_iter_0800.png">
+                <figcaption>Iteration: 800</figcaption>
+            </figure>
+            <figure>
+                <img src="media/snorlax_novel_view_iter_1000.png">
+                <figcaption>Iteration: 1000</figcaption>
+            </figure>
+            <figure>
+                <img src="media/snorlax_novel_view_iter_1200.png">
+                <figcaption>Iteration: 1200</figcaption>
+            </figure>
+            <figure>
+                <img src="media/snorlax_novel_view_iter_1400.png">
+                <figcaption>Iteration: 1400</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            Summary of training results: Overall, the validation PSNR was relatively low (around 16 dB) and the images were pretty blurry, likely due to the fact that I had to downsample my images significantly to avoid memory issues. With higher resolution images and more training iterations, the results could be improved.
+            This suggests that when working with custom data, it can be more challenging to figure out the best hyperparameters and settings to achieve good results and accurate reconstructions.
+        </p>
+    </div>
+</body>
+</html>
