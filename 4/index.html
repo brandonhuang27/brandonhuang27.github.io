@@ -270,7 +270,7 @@
     <div class="section">
         <h2>Part 2.6: Training with your own data</h2>
         <p class="description">
-            In this part, I trained the neural radiance field using my own captured data from Part 0. I used the calibrated camera parameters and undistorted images to train the model, following the same procedure as with the Lego scene.
+            In this part, I trained the neural radiance field using my own captured Snorlax images from Part 0. I used the calibrated camera parameters and undistorted images to train the model, following the same procedure as with the Lego scene.
             I kept the hyperparmeters mostly the same, using an Adam optimizer with learning rate 5e-4, 10000 rays per iteration, and 1500 iterations.
             However, the dimensions of my phone's images were 4032x3024, which was causing memory issues, so I rescaled the images to have dimensions of 640x480.
         </p>
@@ -331,7 +331,7 @@
             </figure>
         </div>
         <p class="description">
-            Summary of training results: Overall, the validation PSNR was relatively low (around 16 dB) and the images were pretty blurry, likely due to the fact that I had to downsample my images significantly to avoid memory issues. With higher resolution images and more training iterations, the results could be improved.
+            Summary of training results: Overall, the validation PSNR for the Snorlax scene (around 21dB) was slightly lower compared to the Lego scene and the images were a little more blurry, likely due to the fact that I had to downsample my images significantly to avoid memory issues. With higher resolution images and more training iterations, the results could be improved.
             This suggests that when working with custom data, it can be more challenging to figure out the best hyperparameters and settings to achieve good results and accurate reconstructions.
         </p>
     </div>
