@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <title>Neural Radiance Field!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            background: #fafafa;
+            color: #222;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        h2 {
+            margin-top: 2rem;
+            color: #2c3e50;
+        }
+        .section {
+            margin-bottom: 2.5rem;
+        }
+        .description {
+            margin: 0.5rem 0 1rem 0;
+        }
+        .images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .images figure {
+            flex: 1;              /* let each figure take up more space */
+            /* flex: 0 0 auto;
+            text-align: center; */
+        }
+        .images img {
+            max-width: 300px;
+            /* width: 70%; */
+            height: auto;
+            /* width: 250px;
+            height: 250px;
+            object-fit: cover; */
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .campanile-row {
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .campanile-row figure {
+            width: 260px;              /* identical column width */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .campanile-row img {
+            width: 250px;
+            height: 250px;
+            object-fit: cover;      /* crop nicely into a square */
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .campanile-row figcaption {
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Project 5: Fun With Diffusion Models!</h1>
+
+    <div class="section">
+        <h2>Part A: The Power of Diffusion Models!</h2>
+        <p class="description">
+            In this project, I became familiar with diffusion models, implemented diffusion sampling loops, used them for tasks such as inpainting, and creating optical illusions.
+        </p>
+        <p class="description">
+            Random Seed: 100
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Part 0: Setup</h2>
+        <p class="description">
+            In this part, I created a few creative text prompts, generated their embeddings, and tried 3 different values for the num_inference_steps parameter (10, 20, 40) to see how it affected the quality of the generated images and how they related to the prompts.
+        </p>
+        <p class="description">
+            <b style="font-size: 1.2em;">Prompt 1: An oil painting of a man surfing</b>
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/part0_firstprompt_10.jpg">
+                <figcaption>num_inference_steps = 10</figcaption>
+            </figure>
+            <figure>
+                <img src="media/part0_firstprompt_20.jpg">
+                <figcaption>num_inference_steps = 20</figcaption>
+            </figure>
+            <figure>
+                <img src="media/part0_firstprompt_40.jpg">
+                <figcaption>num_inference_steps = 40</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            <b style="font-size: 1.2em;">Prompt 2: "a photo of a man playing tennis"</b>
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/part0_secondprompt_10.jpg">
+                <figcaption>num_inference_steps = 10</figcaption>
+            </figure>
+            <figure>
+                <img src="media/part0_secondprompt_20.jpg">
+                <figcaption>num_inference_steps = 20</figcaption>
+            </figure>
+            <figure>
+                <img src="media/part0_secondprompt_40.jpg">
+                <figcaption>num_inference_steps = 40</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            <b style="font-size: 1.2em;">Prompt 3: "a photo of a cat chewing a toy"</b>
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/part0_thirdprompt_10.jpg">
+                <figcaption>num_inference_steps = 10</figcaption>
+            </figure>
+            <figure>
+                <img src="media/part0_thirdprompt_20.jpg">
+                <figcaption>num_inference_steps = 20</figcaption>
+            </figure>
+            <figure>
+                <img src="media/part0_thirdprompt_40.jpg">
+                <figcaption>num_inference_steps = 40</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            Overall, the images generated with higher num_inference_steps tended to have better quality and more detail, as the model had more steps to refine the image. This trend was consistent across all three prompts.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Part 1: Sampling Loops</h2>
+        <p class="description">
+            In this part, I wrote my own sampling loops for diffusion models, using the pretrained DeepFloyd denoisers in order to produce high quality images from noise.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Part 1.1 Implementing the Forward Process</h2>
+        <p class="description">
+            In this part, I implemented the forward diffusion process (the noisy_im = forward(im, t) function), which gradually adds noise to an image over a series of time steps.
+        </p>
+        <div class="images">
+            <figure>
+                <figcaption>Here is my code for the forward(im, t) function:</figcaption>
+                <img src="media/180proj5code.jpg">
+            </figure>
+        </div>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/campanile.jpg">
+                <figcaption>Campanile</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campanile_250.png">
+                <figcaption>Noisy Campanile at t=250</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campanile_500.png">
+                <figcaption>Noisy Campanile at t=500</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campanile_750.png">
+                <figcaption>Noisy Campanile at t=750</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 1.2: Classical Denoising</h2>
+        <p class="description">
+            In this part, I implemented a classical denoising method using Gaussian blur filtering to denoise images that had noise added through the forward diffusion process.
+        </p>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/campanile_250.png">
+                <figcaption>Noisy Campanile at t=250</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campanile_500.png">
+                <figcaption>Noisy Campanile at t=500</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campanile_750.png">
+                <figcaption>Noisy Campanile at t=750</figcaption>
+            </figure>
+        </div>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/denoised_campanile_250.png">
+                <figcaption>Gaussian Blur Denoising at t=250</figcaption>
+            </figure>
+            <figure>
+                <img src="media/denoised_campanile_500.png">
+                <figcaption>Gaussian Blur Denoising at t=500</figcaption>
+            </figure>
+            <figure>
+                <img src="media/denoised_campanile_750.png">
+                <figcaption>Gaussian Blur Denoising at t=750</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 1.3: One-Step Denoising</h2>
+        <p class="description">
+            In this part, I used stage_1.unet as the denoiser, which is a UNet that is trained on a very large dataset of images. It recovers Gaussian noise added to images at various time steps and removes it to produce a denoised image.
+        </p>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/campanile_250.png">
+                <figcaption>Noisy Campanile at t=250</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campanile_500.png">
+                <figcaption>Noisy Campanile at t=500</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campanile_750.png">
+                <figcaption>Noisy Campanile at t=750</figcaption>
+            </figure>
+        </div>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/denoised_campanile_250.png">
+                <figcaption>One-Step Denoised Campanile at t=250</figcaption>
+            </figure>
+            <figure>
+                <img src="media/denoised_campanile_500.png">
+                <figcaption>One-Step Denoised Campanile at t=500</figcaption>
+            </figure>
+            <figure>
+                <img src="media/denoised_campanile_750.png">
+                <figcaption>One-Step Denoised Campanile at t=750</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class ="section">
+        <h2>Part 1.4: Iterative Denoising</h2>
+        <p class="description">
+            In this part, I implemented the iterative denoising loop using strided timesteps to gradually denoise an image from pure noise to a clean image. For denoising, I used the provided formula that uses x_t, the predicted noise, and the alpha values to compute x_t', where t' represents the previous timestep.
+        </p>
+        <p class="description">
+            Below, I show the noise Campanile image at every 5th loop of denoising. You can see how the image gradually becomes clearer and more detailed as the denoising process progresses.
+        </p>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/campanile_690.png">
+                <figcaption>t=690</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campanile_540.png">
+                <figcaption>t=540</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campanile_390.png">
+                <figcaption>t=390</figcaption>
+            </figure>
+        </div>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/campanile_240.png">
+                <figcaption>t=240</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campanile_90.png">
+                <figcaption>t=90</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            Below, I compare the original Campanile image with the iteratively denoised image, the denoised image from a single denoising step, and the Gaussian blurred image.
+        </p>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/campanile_original.png">
+                <figcaption>Original</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campanile_iteratively_denoised.png">
+                <figcaption>Iteratively Denoised Campanile</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campanile_onestep_denoised.png">
+                <figcaption>One-Step Denoised Campanile</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campanile_gaussian_blurred.png">
+                <figcaption>Gaussian Blurred Campanile</figcaption>
+            </figure>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Part 1.5: Diffusion Model Sampling</h2>
+        <p class="description">
+            In this part, I generated images from scratch by starting with pure random noise and applying the iterative denoising process. Here are 5 sampled images generated from the prompt "a high quality photo."
+        </p>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/sample1.png">
+                <figcaption>Sample 1</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sample2.png">
+                <figcaption>Sample 2</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sample3.png">
+                <figcaption>Sample 3</figcaption>
+            </figure>
+        </div>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/sample4.png">
+                <figcaption>Sample 4</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sample5.png">
+                <figcaption>Sample 5</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 1.6: Classifier-Free Guidance (CFG)</h2>
+        <p class="description">
+            In this part, I implemented classifier-free guidance (CFG) to improve the quality of the generated images. CFG works by generating two predictions at each timestep: one conditioned on the text prompt (eps_c) and one unconditioned (eps_u) without the prompt. The final prediction is a weighted combination of these two, controlled by a guidance scale parameter. Hence, the formula is eps = eps_c + y * (eps_c - eps_u), where y is the guidance scale (I used a CFG scale of y=7).
+        </p>
+        <p class="description">
+            Here is my code for the iterative_denoise_cfg() function:
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/iterative_denoise_cfg_code.jpg">
+            </figure>
+        </div>
+        <p class="description">
+            Below are 5 sampled images generated using CFG from the prompt "a high quality photo."
+        </p>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/cfg_sample1.png">
+                <figcaption>Sample 1 with CFG</figcaption>
+            </figure>
+            <figure>
+                <img src="media/cfg_sample2.png">
+                <figcaption>Sample 2 with CFG</figcaption>
+            </figure>
+            <figure>
+                <img src="media/cfg_sample3.png">
+                <figcaption>Sample 3 with CFG</figcaption>
+            </figure>
+        </div>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/cfg_sample4.png">
+                <figcaption>Sample 4 with CFG</figcaption>
+            </figure>
+            <figure>
+                <img src="media/cfg_sample5.png">
+                <figcaption>Sample 5 with CFG</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 1.7: Image-to-image Translation</h2>
+        <p class="description">
+            In this part, I took a real image, added noise to it, and then denoised it. The amount of noise that is added controls how large the edit will be. A higher amount of noise results in a more significant change to the original image, while a lower amount of noise preserves more of the original content. For all of the examples below, I used the prompt "a high quality photo."
+        </p>
+        <p class="description">
+            <b style="font-size: 1.2em;">Campanile</b>
+        </p>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/sdedit_campanile_1.png">
+                <figcaption>SDEdit with i_start=1</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_campanile_3.png">
+                <figcaption>SDEdit with i_start=3</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_campanile_5.png">
+                <figcaption>SDEdit with i_start=5</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_campanile_7.png">
+                <figcaption>SDEdit with i_start=7</figcaption>
+            </figure>
+        </div>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/sdedit_campanile_10.png">
+                <figcaption>SDEdit with i_start=10</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_campanile_20.png">
+                <figcaption>SDEdit with i_start=20</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_campanile_original.png">
+                <figcaption>Original Campanile Image</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            <b style="font-size: 1.2em;">Church</b>
+        </p>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/sdedit_church_1.png">
+                <figcaption>SDEdit with i_start=1</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_church_3.png">
+                <figcaption>SDEdit with i_start=3</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_church_5.png">
+                <figcaption>SDEdit with i_start=5</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_church_7.png">
+                <figcaption>SDEdit with i_start=7</figcaption>
+            </figure>
+        </div>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/sdedit_church_10.png">
+                <figcaption>SDEdit with i_start=10</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_church_20.png">
+                <figcaption>SDEdit with i_start=20</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_church_original.png">
+                <figcaption>Original Church Image</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            <b style="font-size: 1.2em;">Flower</b>
+        </p>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/sdedit_flower_1.png">
+                <figcaption>SDEdit with i_start=1</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_flower_3.png">
+                <figcaption>SDEdit with i_start=3</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_flower_5.png">
+                <figcaption>SDEdit with i_start=5</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_flower_7.png">
+                <figcaption>SDEdit with i_start=7</figcaption>
+            </figure>
+        </div>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/sdedit_flower_10.png">
+                <figcaption>SDEdit with i_start=10</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_flower_20.png">
+                <figcaption>SDEdit with i_start=20</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_flower_original.png">
+                <figcaption>Original Flower Image</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 1.7.1: Editing Hand-Drawn and Web Images</h2>
+        <p class="description">
+            In this part, I did image-to-image translation on one web image and two hand drawn images using the prompt "a high quality photo."
+        </p>
+        <p class="description">
+            <b style="font-size: 1.2em;">Web Image</b>
+        </p>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/sdedit_dog_original.png">
+                <figcaption>Original Web Image</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_dog_1.png">
+                <figcaption>i_start=1</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_dog_3.png">
+                <figcaption>i_start=3</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_dog_5.png">
+                <figcaption>i_start=5</figcaption>
+            </figure>
+        </div>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/sdedit_dog_7.png">
+                <figcaption>i_start=7</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_dog_10.png">
+                <figcaption>i_start=10</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_dog_20.png">
+                <figcaption>i_start=20</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            <b style="font-size: 1.2em;">Hand Drawn Image 1</b>
+        </p>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/sdedit_basketball_original.png">
+                <figcaption>Original Hand Drawn Image 1</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_basketball_1.png">
+                <figcaption>i_start=1</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_basketball_3.png">
+                <figcaption>i_start=3</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_basketball_5.png">
+                <figcaption>i_start=5</figcaption>
+            </figure>
+        </div>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/sdedit_basketball_7.png">
+                <figcaption>i_start=7</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_basketball_10.png">
+                <figcaption>i_start=10</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_basketball_20.png">
+                <figcaption>i_start=20</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            <b style="font-size: 1.2em;">Hand Drawn Image 2</b>
+        </p>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/sdedit_house_original.png">
+                <figcaption>Original Hand Drawn Image 2</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_house_1.png">
+                <figcaption>i_start=1</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_house_3.png">
+                <figcaption>i_start=3</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_house_5.png">
+                <figcaption>i_start=5</figcaption>
+            </figure>
+        </div>
+        <div class="images campanile-row">
+            <figure>
+                <img src="media/sdedit_house_7.png">
+                <figcaption>i_start=7</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_house_10.png">
+                <figcaption>i_start=10</figcaption>
+            </figure>
+            <figure>
+                <img src="media/sdedit_house_20.png">
+                <figcaption>i_start=20</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 1.7.2: Inpainting</h2>
+        <p class="description">
+            In this part, I performed inpainting on images with missing regions using the prompt "a high quality photo." The model fills in the masked parts of the image based on the surrounding context and the text prompt.
+            It works by running the diffusion denoising loop, but at every step, it forces x_t to have the same pixels as x_orig where the mask m is 0.
+            The formula is x_t = m * x_t + (1 - m) * forward(x_orig, t).
+        </p>
+        <p class="description">
+            Here is my code for the inpaint() function:
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/inpaint.png">
+            </figure>
+        </div>
+        <p class="description">
+            <b style="font-size: 1.2em;">Campanile Inpainting</b>
+        </p>
+        <div class="campanile-row">
+            <figure>
+                <img src="media/campanile_original.png">
+                <figcaption>Campanile</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campanile_mask.png">
+                <figcaption>Mask</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campanile_toreplace.png">
+                <figcaption>Hole to Fill</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campanile_inpainted.png">
+                <figcaption>Campanile Inpainted</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            <b style="font-size: 1.2em;">Custom Image and Mask: Bridge Inpainting</b>
+        </p>
+        <div class="campanile-row">
+            <figure>
+                <img src="media/bridge_original.png">
+                <figcaption>Bridge</figcaption>
+            </figure>
+            <figure>
+                <img src="media/bridge_mask.png">
+                <figcaption>Mask</figcaption>
+            </figure>
+            <figure>
+                <img src="media/bridge_toreplace.png">
+                <figcaption>Hole to Fill</figcaption>
+            </figure>
+            <figure>
+                <img src="media/bridge_inpainted.png">
+                <figcaption>Bridge Inpainted</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            <b style="font-size: 1.2em;">Custom Image and Mask: Taj Inpainting</b>
+        </p>
+        <div class="campanile-row">
+            <figure>
+                <img src="media/taj_original.png">
+                <figcaption>Taj</figcaption>
+            </figure>
+            <figure>
+                <img src="media/taj_mask.png">
+                <figcaption>Mask</figcaption>
+            </figure>
+            <figure>
+                <img src="media/taj_toreplace.png">
+                <figcaption>Hole to Fill</figcaption>
+            </figure>
+            <figure>
+                <img src="media/taj_inpainted.png">
+                <figcaption>Taj Inpainted</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 1.7.3: Text-Conditional Image-to-image Translation</h2>
+        <p class="description">
+            In this part, I combined image-to-image translation with custom text prompts to guide the projection. For each image, I selected a prompt that would alter the image in a specific way while still retaining some of the original content. Clearly, for higher levels of noise added (higher i_start values), it gradually starts to look more like the original image, but still with some characteristics of the text prompt.
+        </p>
+        <p class="description">
+            <b style="font-size: 1.2em;">Campanile with Prompt: "an oil painting of a man surfing"</b>
+        </p>
+        <div class="campanile-row">
+            <figure>
+                <img src="media/surfing_to_campanile_1.png">
+                <figcaption>i_start=1</figcaption>
+            </figure>
+            <figure>
+                <img src="media/surfing_to_campanile_3.png">
+                <figcaption>i_start=3</figcaption>
+            </figure>
+            <figure>
+                <img src="media/surfing_to_campanile_5.png">
+                <figcaption>i_start=5</figcaption>
+            </figure>
+            <figure>
+                <img src="media/surfing_to_campanile_7.png">
+                <figcaption>i_start=7</figcaption>
+            </figure>
+        </div>
+        <div class="campanile-row">
+            <figure>
+                <img src="media/surfing_to_campanile_10.png">
+                <figcaption>i_start=10</figcaption>
+            </figure>
+            <figure>
+                <img src="media/surfing_to_campanile_20.png">
+                <figcaption>i_start=20</figcaption>
+            </figure>
+            <figure>
+                <img src="media/campanile_original.png">
+                <figcaption>Campanile</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            <b style="font-size: 1.2em;">Bridge with Prompt: "a photo of a cat chewing a toy"</b>
+        </p>
+        <div class="campanile-row">
+            <figure>
+                <img src="media/cat_to_bridge_1.png">
+                <figcaption>i_start=1</figcaption>
+            </figure>
+            <figure>
+                <img src="media/cat_to_bridge_3.png">
+                <figcaption>i_start=3</figcaption>
+            </figure>
+            <figure>
+                <img src="media/cat_to_bridge_5.png">
+                <figcaption>i_start=5</figcaption>
+            </figure>
+            <figure>
+                <img src="media/cat_to_bridge_7.png">
+                <figcaption>i_start=7</figcaption>
+            </figure>
+        </div>
+        <div class="campanile-row">
+            <figure>
+                <img src="media/cat_to_bridge_10.png">
+                <figcaption>i_start=10</figcaption>
+            </figure>
+            <figure>
+                <img src="media/cat_to_bridge_20.png">
+                <figcaption>i_start=20</figcaption>
+            </figure>
+            <figure>
+                <img src="media/bridge_original.png">
+                <figcaption>Bridge</figcaption>
+            </figure>
+        </div>
+        <p class="description">
+            <b style="font-size: 1.2em;">Taj with Prompt: "a photo of a man playing tennis"</b>
+        </p>
+        <div class="campanile-row">
+            <figure>
+                <img src="media/tennis_to_taj_1.png">
+                <figcaption>i_start=1</figcaption>
+            </figure>
+            <figure>
+                <img src="media/tennis_to_taj_3.png">
+                <figcaption>i_start=3</figcaption>
+            </figure>
+            <figure>
+                <img src="media/tennis_to_taj_5.png">
+                <figcaption>i_start=5</figcaption>
+            </figure>
+            <figure>
+                <img src="media/tennis_to_taj_7.png">
+                <figcaption>i_start=7</figcaption>
+            </figure>
+        </div>
+        <div class="campanile-row">
+            <figure>
+                <img src="media/tennis_to_taj_10.png">
+                <figcaption>i_start=10</figcaption>
+            </figure>
+            <figure>
+                <img src="media/tennis_to_taj_20.png">
+                <figcaption>i_start=20</figcaption>
+            </figure>
+            <figure>
+                <img src="media/taj_original.png">
+                <figcaption>Taj</figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 1.8: Visual Anagrams</h2>
+        <p class="description">
+            In this part, I implemented visual anagrams, which is optical illutions using diffusion models. When upright, the image resembles one prompt, but when rotated 180 degrees, it resembles another prompt.
+            The algorithm works by denoising an image x_t at step t towards two different prompts, p1 and p2, one for the upright image and one for the flipped image. I then average the two noise estimates and use the averaged noise estimate to perform a reverse/denoising diffusion step.
+        </p>
+        <p class="description">
+            Here is my code for the make_flip_illusion() function:
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/visual_anagrams_code.png">
+            </figure>
+        </div>
+        <p class="description">
+            <b style="font-size: 1.2em;">Visual Anagram 1</b>
+        </p>
+        <div class="campanile-row">
+            <figure>
+                <figcaption>Upright: "an oil painting of a man surfing"</figcaption>
+                <img src="media/surf_lake_upright.png">
+            </figure>
+            <figure>
+                <figcaption>Flipped: "a man sitting by a lake"</figcaption>
+                <img src="media/surf_lake_rotated.png">
+            </figure>
+        </div>
+        <p class="description">
+            <b style="font-size: 1.2em;">Visual Anagram 2</b>
+        </p>
+        <div class="campanile-row">
+            <figure>
+                <figcaption>Upright: "a woman walking her dog in a residential neighborhood"</figcaption>
+                <img src="media/dog_office_upright.png">
+            </figure>
+            <figure>
+                <figcaption>Flipped: "an office room with a desk and computer"</figcaption>
+                <img src="media/dog_office_rotated.png">
+            </figure>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Part 1.9: Hybrid Images</h2>
+        <p class="description">
+            In this part, I created hybrid images with a diffusion model. Hybrid images combine two different images such that when viewed up close, one image is visible, and when viewed from a distance, the other image becomes apparent. This effect is achieved by blending the high-frequency components of one image with the low-frequency components of another image.
+            In other words, I denoise an image x_t at step t towards two different prompts, p1 and p2, one for the high-frequency image and one for the low-frequency image, and combine the two noise estimates. 
+        </p>
+        <p class="description">
+            Here is my code for the make_hybrids() function:
+        </p>
+        <div class="images">
+            <figure>
+                <img src="media/hybrids_code.png">
+            </figure>
+        </div>
+        <p class="description">
+            <b style="font-size: 1.2em;">Hybrid Image 1</b>
+        </p>
+        <p class="description">
+            Low frequency prompt: "a green pasture of farmland"<br>
+            High frequency prompt: "a family of birds flying in the sky"
+        </p>
+        <div class="campanile-row">
+            <figure>
+                <img src="media/hybrid_farmland_birds.png">
+            </figure>
+        </div>
+        <p class="description">
+            <b style="font-size: 1.2em;">Hybrid Image 2</b>
+        </p>
+        <p class="description">
+            Low frequency prompt: "a photo of desert land"<br>
+            High frequency prompt: "an oil painting of a tiny cabin"
+        </p>
+        <div class="campanile-row">
+            <figure>
+                <img src="media/hybrid_desert_cabin.png">
+            </figure>
+        </div>
+    </div>
+</body>
+</html>
