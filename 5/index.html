@@ -162,12 +162,6 @@
         <p class="description">
             In this part, I implemented the forward diffusion process (the noisy_im = forward(im, t) function), which gradually adds noise to an image over a series of time steps.
         </p>
-        <div class="images">
-            <figure>
-                <figcaption>Here is my code for the forward(im, t) function:</figcaption>
-                <img src="media/180proj5code.jpg">
-            </figure>
-        </div>
         <div class="images campanile-row">
             <figure>
                 <img src="media/campanile.jpg">
@@ -349,14 +343,6 @@
         <p class="description">
             In this part, I implemented classifier-free guidance (CFG) to improve the quality of the generated images. CFG works by generating two predictions at each timestep: one conditioned on the text prompt (eps_c) and one unconditioned (eps_u) without the prompt. The final prediction is a weighted combination of these two, controlled by a guidance scale parameter. Hence, the formula is eps = eps_c + y * (eps_c - eps_u), where y is the guidance scale (I used a CFG scale of y=7).
         </p>
-        <p class="description">
-            Here is my code for the iterative_denoise_cfg() function:
-        </p>
-        <div class="images">
-            <figure>
-                <img src="media/iterative_denoise_cfg_code.jpg">
-            </figure>
-        </div>
         <p class="description">
             Below are 5 sampled images generated using CFG from the prompt "a high quality photo."
         </p>
@@ -618,14 +604,6 @@
             The formula is x_t = m * x_t + (1 - m) * forward(x_orig, t).
         </p>
         <p class="description">
-            Here is my code for the inpaint() function:
-        </p>
-        <div class="images">
-            <figure>
-                <img src="media/inpaint.png">
-            </figure>
-        </div>
-        <p class="description">
             <b style="font-size: 1.2em;">Campanile Inpainting</b>
         </p>
         <div class="campanile-row">
@@ -809,14 +787,6 @@
             The algorithm works by denoising an image x_t at step t towards two different prompts, p1 and p2, one for the upright image and one for the flipped image. I then average the two noise estimates and use the averaged noise estimate to perform a reverse/denoising diffusion step.
         </p>
         <p class="description">
-            Here is my code for the make_flip_illusion() function:
-        </p>
-        <div class="images">
-            <figure>
-                <img src="media/visual_anagrams_code.png">
-            </figure>
-        </div>
-        <p class="description">
             <b style="font-size: 1.2em;">Visual Anagram 1</b>
         </p>
         <div class="campanile-row">
@@ -850,14 +820,6 @@
             In this part, I created hybrid images with a diffusion model. Hybrid images combine two different images such that when viewed up close, one image is visible, and when viewed from a distance, the other image becomes apparent. This effect is achieved by blending the high-frequency components of one image with the low-frequency components of another image.
             In other words, I denoise an image x_t at step t towards two different prompts, p1 and p2, one for the high-frequency image and one for the low-frequency image, and combine the two noise estimates. 
         </p>
-        <p class="description">
-            Here is my code for the make_hybrids() function:
-        </p>
-        <div class="images">
-            <figure>
-                <img src="media/hybrids_code.png">
-            </figure>
-        </div>
         <p class="description">
             <b style="font-size: 1.2em;">Hybrid Image 1</b>
         </p>
